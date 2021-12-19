@@ -153,6 +153,32 @@ bool data::read(std::string_view name, std::vector<int> &values)
     }
 }
 
+/**
+ * Write a dataref
+ */
+bool data::write(std::string_view name, int index,
+	   float offset, float scale, float value)
+{
+    data_item *item = retrieve_data(name);
+    float val = value * scale + offset;
+
+    if (item->type & xplmType_Int) {
+        write_int(item, static_cast<int>(val));
+        return true;
+    } else if (item->type & xplmType_Float) {
+        write_float(item, val);
+        return true;
+    } else if (item->type & xplmType_FloatArray) {
+        write_float_array(item, index, &val, 1);
+        return true;
+    } else if (item->type & xplmType_IntArray) {
+        write_int_array(item, index, reinterpret_cast<int *>(&val), 1);
+        return true;
+    } else {
+        LOG_ERROR << "Could not write dataref '" << name.data() << "' from 'Int' or 'Float'" << LOG_END
+        return false;
+    }
+}
 
 /**
  * Toggle a dataref between on and off
@@ -307,6 +333,25 @@ std::vector<int> data::read_int_array(const data_item *item)
     return values;
 }
 
+void data::write_int(const data_item *item, int value)
+{
+    XPLMSetDatai(item->dataref, value);
+}
+
+void data::write_float(const data_item *item, float value)
+{
+    XPLMSetDataf(item->dataref, value);
+}
+
+void data::write_float_array(const data_item *item, int index, float *value, int count)
+{
+    XPLMSetDatavf(item->dataref, value, index, count);
+}
+
+void data::write_int_array(const data_item *item, int index, int *value, int count)
+{
+    XPLMSetDatavi(item->dataref, value, index, count);
+}
 
 /**
  * Toggle an integer dataref between on and off

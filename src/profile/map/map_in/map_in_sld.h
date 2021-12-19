@@ -47,6 +47,13 @@ public:
     void set_command_down(std::string_view command);
     [[nodiscard]] std::string_view command_down() const;
 
+    void set_dataref(std::string_view dataref);
+    [[nodiscard]] std::string_view dataref() const;
+
+    void set_index(std::string_view index);
+    void set_offset(std::string_view offset);
+    void set_scale(std::string_view scale);
+
     void read_config(toml::value &settings) override;
     bool check() override;
 
@@ -56,6 +63,10 @@ private:
     std::string m_command_up {};
     std::string m_command_middle {};
     std::string m_command_down {};
+    std::string m_dataref {};
+    int m_index { };
+    float m_offset {};
+    float m_scale { 1 };
 };
 
 } // Namespace xmidictrl
