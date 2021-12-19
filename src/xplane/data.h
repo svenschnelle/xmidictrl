@@ -39,6 +39,7 @@ public:
     bool read(std::string_view name, std::string &value);
     bool read(std::string_view name, std::vector<float> &values);
     bool read(std::string_view name, std::vector<int> &values);
+    bool write(std::string_view name, int index, float offset, float scale, float value);
 
     bool toggle(std::string_view name, std::string_view value_on, std::string_view value_off);
 
@@ -53,6 +54,10 @@ private:
     static std::vector<float> read_float_array(const data_item *item);
     static std::vector<int> read_int_array(const data_item *item);
 
+    static void write_int(const data_item *item, int value);
+    static void write_float(const data_item *item, float value);
+    static void write_float_array(const data_item *item, int index, float *value, int count);
+    static void write_int_array(const data_item *item, int index, int *value, int count);
     static void toggle_int(const data_item *item, std::string_view value_on, std::string_view value_off);
     static void toggle_float(const data_item *item, std::string_view value_on, std::string_view value_off);
     static void toggle_double(const data_item *item, std::string_view value_on, std::string_view value_off);

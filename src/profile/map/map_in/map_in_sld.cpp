@@ -105,6 +105,53 @@ std::string_view map_in_sld::command_down() const
 
 
 /**
+ * Set the dataref
+ */
+void map_in_sld::set_dataref(std::string_view dataref)
+{
+    m_dataref = dataref;
+}
+
+
+/**
+ * Return the int dataref
+ */
+std::string_view map_in_sld::dataref() const
+{
+    return m_dataref;
+}
+
+/**
+ * Set the array index
+ */
+void map_in_sld::set_index(std::string_view index)
+{
+    if (!index.empty())
+        m_index = std::stoi(index.data());
+}
+
+
+/**
+ * Set the offset
+ */
+void map_in_sld::set_offset(std::string_view offset)
+{
+    if (!offset.empty())
+        m_offset = std::stof(offset.data());
+}
+
+
+/**
+ * Set the scale
+ */
+void map_in_sld::set_scale(std::string_view scale)
+{
+    if (!scale.empty())
+        m_scale = std::stof(scale.data()) / 127;
+}
+
+
+/**
  * Read settings from config
  */
 void map_in_sld::read_config(toml::value &settings)
@@ -120,6 +167,18 @@ void map_in_sld::read_config(toml::value &settings)
 
     // read command down
     set_command_down(utils::read_string_parameter(settings, CFG_KEY_COMMAND_DOWN));
+
+    // read dataref_int
+    set_dataref(utils::read_string_parameter(settings, CFG_KEY_DATAREF));
+
+    // read array index
+    set_index(utils::read_string_parameter(settings, CFG_KEY_INDEX));
+
+    // read offset
+    set_offset(utils::read_string_parameter(settings, CFG_KEY_OFFSET));
+
+    // read scale
+    set_scale(utils::read_string_parameter(settings, CFG_KEY_SCALE));
 }
 
 
@@ -131,10 +190,11 @@ bool map_in_sld::check()
     if (!map::check())
         return false;
 
-    if (m_command_up.empty() && m_command_down.empty())
-        return false;
-    else
-        return true;
+    //    if (!m_dataref.empty() && (!m_command_up.empty() || !m_command_down.empty()))
+    //       return false;
+
+	//    return !(m_command_up.empty() && m_command_down.empty());
+	return true;
 }
 
 
@@ -143,7 +203,9 @@ bool map_in_sld::check()
  */
 void map_in_sld::execute(midi_message &msg)
 {
-    if (msg.velocity <= 10) {
+    if (m_dataref.length() > 0) {
+      m_xp->datarefs().write(m_dataref, m_index, m_offset, m_scale, (float)msg.velocity / (float)127);
+    } else if (msg.velocity <= 10) {
         LOG_DEBUG << " --> Execute command '" << m_command_down << "'" << LOG_END
         m_xp->cmd().execute(m_command_down);
     } else if (msg.velocity >= 117) {
