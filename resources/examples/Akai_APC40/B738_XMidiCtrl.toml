@@ -1,0 +1,90 @@
+# XMidiCtrl
+#
+# Example configuration for the AKAI APC-40 MIDI controller together with the Zibo 738
+#
+# How to use:
+#   1. Copy this file into your aircraft directory and rename it to XMidiCtrl.toml
+#   2. Adjust the port_in and port_out variables
+#   3. Start X-Plane or execute from the plugin menu XMidiCtrl -> Reload Aircraft Profile
+#----------------------------------------------------------------------------------------------------------------------
+title   = "Settings for the ZIBO 737-800"
+version = "0.50"
+
+# AKAI APC-40
+[[device]]
+name       = "AKAI APC40"
+port_in    = 0
+port_out   = 1
+init       = [ 0xf0, 0x47, 0x00, 0x73, 0x60, 0x00, 0x04, 0x42, 0x01, 0x00, 0x00, 0xf7 ] # switch to alternate ableton mode
+mapping_in = [
+  # Slider
+  { ch = 0, cc = 7,  type = "sld", dataref = "sim/multiplayer/controls/engine_throttle_request", index="0" },
+  { ch = 1, cc = 7,  type = "sld", dataref = "sim/cockpit2/controls/flap_ratio" },
+  { ch = 2, cc = 7,  type = "sld", dataref = "sim/multiplayer/controls/speed_brake_request", index="0" },
+
+
+  # upper row of encoders
+  { ch = 0, cc = 48,  type = "enc", mode="akai", command_up = "laminar/B738/rtp_L/freq_MHz/sel_dial_up", command_down = "laminar/B738/rtp_L/freq_MHz/sel_dial_dn" },
+  { ch = 0, cc = 49,  type = "enc", mode="akai", command_up = "sim/radios/stby_nav1_coarse_up", command_down = "sim/radios/stby_nav1_coarse_dn" },
+  { ch = 0, cc = 51,  type = "enc", mode="akai", command_up = "laminar/B738/EFIS_control/capt/baro_in_hpa_up", command_down = "laminar/B738/EFIS_control/capt/baro_in_hpa_dn" },
+
+  # second row of encoders
+  { ch = 0, cc = 52,  type = "enc", mode="akai", command_up = "laminar/B738/rtp_L/freq_khz/sel_dial_up", command_down = "laminar/B738/rtp_L/freq_khz/sel_dial_dn" },
+  { ch = 0, cc = 53,  type = "enc", mode="akai", command_up = "sim/radios/stby_nav1_fine_up", command_down = "sim/radios/stby_nav1_fine_dn" },
+  { ch = 0, cc = 55,  type = "enc", mode="akai", command_up = "laminar/B738/pilot/barometer_up", command_down = "laminar/B738/pilot/barometer_down" },
+
+  # third row of encoders
+  { ch = 0, cc = 16,  type = "enc", mode="akai", command_up = "laminar/B738/autopilot/course_pilot_up", command_down = "laminar/B738/autopilot/course_pilot_dn" },
+
+  # lowest row of encoders
+  { ch = 0, cc = 20,  type = "enc", mode="akai", command_up = "sim/autopilot/airspeed_up", command_down = "sim/autopilot/airspeed_down" },
+  { ch = 0, cc = 21,  type = "enc", mode="akai", command_up = "laminar/B738/autopilot/heading_up", command_down = "laminar/B738/autopilot/heading_dn" },
+  { ch = 0, cc = 22,  type = "enc", mode="akai", command_up = "laminar/B738/autopilot/altitude_up", command_down = "laminar/B738/autopilot/altitude_dn" },
+  { ch = 0, cc = 23,  type = "enc", mode="akai", command_up = "sim/autopilot/vertical_speed_up", command_down = "sim/autopilot/vertical_speed_down" },
+
+  # Encoder Buttons
+  { ch = 0, note_on = 53, type = "cmd", command = "laminar/B738/autopilot/flight_director_toggle" },
+  { ch = 0, note_on = 55, type = "cmd", command = "laminar/B738/EFIS_control/capt/push_button/rst_press" },
+  { ch = 0, note_on = 56, type = "cmd", command = "laminar/B738/knob/autobrake_up" },
+  { ch = 0, note_on = 57, type = "cmd", command = "laminar/B738/knob/autobrake_dn" },
+
+  { ch = 0, note_on = 48, type = "cmd", command = "sim/autopilot/take_off_go_around" }, # record/arm
+  { ch = 0, note_on = 49, type = "cmd", command = "sim/multiplayer/controls/parking_brake" }, # solo/cue
+
+  { ch = 7, note_on = 53, type = "cmd", command = "sim/flight_controls/landing_gear_up" },
+  { ch = 7, note_on = 54, type = "cmd", command = "sim/flight_controls/landing_gear_down" },
+
+  { ch = 0, note_on = 58, type = "cmd", command = "laminar/B738/autopilot/speed_press" },   # clip/track
+  { ch = 0, note_on = 59, type = "cmd", command = "laminar/B738/autopilot/hdg_sel_press" }, # device on/off
+  { ch = 0, note_on = 60, type = "cmd", command = "laminar/B738/autopilot/alt_hld_press" }, # <-
+  { ch = 0, note_on = 61, type = "cmd", command = "laminar/B738/autopilot/vs_press" },      # ->
+
+  { ch = 0, note_on = 62, type = "cmd", command = "laminar/B738/autopilot/n1_press" },   # detail view
+  { ch = 0, note_on = 63, type = "cmd", command = "laminar/B738/autopilot/lvl_chg_press" },   # rec quantilization
+  { ch = 0, note_on = 64, type = "cmd", command = "laminar/B738/autopilot/lnav_press" },   # midi overdub
+  { ch = 0, note_on = 65, type = "cmd", command = "laminar/B738/autopilot/vorloc_press" },   # midi overdub
+
+  { ch = 0, note_on = 80, type = "cmd", command = "laminar/B738/push_button/master_caution1" },   # pan
+  { ch = 0, note_on = 87, type = "cmd", command = "laminar/B738/rtp_L/freq_txfr/sel_switch" },   # pan
+  { ch = 0, note_on = 88, type = "cmd", command = "sim/radios/nav1_standy_flip" },   # send a
+
+  { ch = 0, note_on = 90, type = "cmd", command = "laminar/B738/EFIS_control/capt/push_button/std_press" }, # send c
+  { ch = 0, note_on = 91, type = "cmd", command = "laminar/B738/autopilot/app_press" },   # play
+  { ch = 0, note_on = 92, type = "cmd", command = "laminar/B738/autopilot/disconnect_toggle" },   # stop
+  { ch = 0, note_on = 93, type = "cmd", command = "laminar/B738/autopilot/cmd_a_press" },   # rec
+
+  { ch = 0, note_on = 94, type = "cmd", command = "laminar/B738/EFIS_control/capt/map_mode_up" },   # bank select down
+  { ch = 0, note_on = 95, type = "cmd", command = "laminar/B738/EFIS_control/capt/map_mode_dn" },   # bank select up
+  { ch = 0, note_on = 96, type = "cmd", command = "laminar/B738/EFIS_control/capt/map_range_up" },   # bank select left
+  { ch = 0, note_on = 97, type = "cmd", command = "laminar/B738/EFIS_control/capt/map_range_dn" },   # bank select right
+]
+mapping_out = [
+  { ch = 5, note_on = 53, send_data="1", type = "drf", dataref = "laminar/B738/annunciator/nose_gear_safe", value_on="1" },
+  { ch = 5, note_on = 53, send_data="3", type = "drf", dataref = "laminar/B738/annunciator/nose_gear_transit", value_on="1" },
+  { ch = 6, note_on = 53, send_data="1", type = "drf", dataref = "laminar/B738/annunciator/nose_gear_safe", value_on="1" },
+  { ch = 6, note_on = 53, send_data="3", type = "drf", dataref = "laminar/B738/annunciator/nose_gear_transit", value_on="1" },
+  { ch = 7, note_on = 53, send_data="1", type = "drf", dataref = "laminar/B738/annunciator/nose_gear_safe", value_on="1" },
+  { ch = 7, note_on = 53, send_data="3", type = "drf", dataref = "laminar/B738/annunciator/nose_gear_transit", value_on="1" },
+
+  { ch = 0, note_on = 80, send_data="2", type = "drf", dataref = "laminar/B738/push_button/master_caution1", value_on="1" },
+]
