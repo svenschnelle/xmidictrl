@@ -46,16 +46,16 @@ map_in_list::~map_in_list()
  */
 void map_in_list::add(const std::shared_ptr<map_in>& map)
 {
-    m_list.insert({utils::ch_cc(map->ch(), map->cc()), map});
+    m_list.insert({utils::ch_cmd_arg(map->ch(), map->cmd(), map->arg()), map});
 }
 
 
 /**
  * Retrieve the mapping for a control change
  */
-map_in_pair map_in_list::get(const int ch, const int cc)
+map_in_pair map_in_list::get(const int ch, const int cmd, const int arg)
 {
-    return m_list.equal_range(utils::ch_cc(ch, cc));
+    return m_list.equal_range(utils::ch_cmd_arg(ch, cmd, arg));
 }
 
 

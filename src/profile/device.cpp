@@ -168,9 +168,10 @@ void device::midi_callback(double deltatime, std::vector<unsigned char> *message
 /**
  * Process an inbound midi message
  */
-void device::process_inbound_message(double deltatime, std::vector<unsigned char> *message)
+void device::process_inbound_message(double deltatime,
+                                     std::vector<unsigned char> *message)
 {
-    bool add_event = false;
+    bool add_event = true;
 
     // read midi message
     if (message->size() > 2) {
@@ -188,96 +189,107 @@ void device::process_inbound_message(double deltatime, std::vector<unsigned char
         // add the midi message to the internal message list (for logging)
         logger::instance().post_midi_message(msg);
 
-        LOG_DEBUG << "Inbound message from device '" << m_name << "' on port '" << m_port_in << "' :: " << "Status = '"
-                  << msg->status << "', Data = '" << msg->data << "', Velocity = '" << msg->velocity << "'"
+        LOG_DEBUG << "Inbound message from device '" << m_name << "' on port '"
+                  << m_port_in << "' :: "
+                  << "Cmd = '" << (msg->status >> 4) << "', Arg='"
+                  << (msg->status & 0xf) << "', Data = '" << msg->data
+                  << "', Velocity = '" << msg->velocity << "'"
                   << LOG_END
 
         // check status
-        if (msg->status < 176 || msg->status > 191) {
-            LOG_ERROR << "Inbound message on port '" << m_port_in << "' :: Invalid status '" << msg->status
-                      << "', only Control Change messages are supported" << LOG_END
-            return;
+        switch (msg->status >> 4) {
+        case 0xb: // control change
+        case 0x8: // note on
+        case 0x9: // note off
+            break;
+        default:
+            LOG_ERROR
+                << "Inbound message on port '" << m_port_in << "' :: Invalid status '"
+                << msg->status
+                << "', only Control Change/Note on/Note off messages are supported"
+                << LOG_END return;
         }
 
         // check data
         if (msg->data < 0 || msg->data > 127) {
-            LOG_ERROR << "Inbound message on port '" << m_port_in << "' :: Invalid Control Change '" << msg->data
-                      << "', supported values are 0 - 127" << LOG_END
-            return;
+            LOG_ERROR << "Inbound message on port '" << m_port_in
+                      << "' :: Invalid Control Change '" << msg->data
+                      << "', supported values are 0 - 127" << LOG_END return;
         }
 
         // check velocity
         if (msg->velocity < 0 || msg->velocity > 127) {
-            LOG_ERROR << "Inbound message on port '" << m_port_in << "' :: Invalid velocity '" << msg->velocity
-                      << "', supported values are 0 - 127" << LOG_END
-            return;
+            LOG_ERROR << "Inbound message on port '" << m_port_in
+                      << "' :: Invalid velocity '" << msg->velocity
+                      << "', supported values are 0 - 127" << LOG_END return;
         }
 
         // check for a mapping
         try {
-            auto mappings = m_map_in.get(msg->status - OFFSET_MIDI_CHANNEL_STATUS, msg->data);
+            auto mappings =
+                m_map_in.get(msg->status & 0xf, msg->status >> 4, msg->data);
 
             for (auto it = mappings.first; it != mappings.second; it++) {
                 auto mapping = it->second;
 
-                // for push and pull we have to wait until the command has ended
-                if (mapping->type() == map_type::push_pull) {
+                switch (mapping->type()) {
+                    // for push and pull we have to wait until the command has ended
+                case map_type::push_pull:
                     switch (msg->velocity) {
-                        case 127: {
-                            save_event_datetime(msg->data);
-                            break;
+                    case 127:
+                        save_event_datetime(msg->data);
+                        break;
+
+                    case 0: {
+                        double seconds = retrieve_event_datetime(msg->data);
+                        if (seconds > -0.5f) {
+                            map_in_pnp::ptr mappingPnP =
+                                std::static_pointer_cast<map_in_pnp>(mapping);
+                            mappingPnP->set_command_type(seconds < 1 ? CommandType::Push
+                                                         : CommandType::Pull);
                         }
-
-                        case 0: {
-                            double seconds = retrieve_event_datetime(msg->data);
-
-                            if (seconds > -0.5f) {
-                                map_in_pnp::ptr mappingPnP = std::static_pointer_cast<map_in_pnp>(mapping);
-
-                                mappingPnP->set_command_type(seconds < 1 ? CommandType::Push : CommandType::Pull);
-                                add_event = true;
-                            }
-
-                            break;
-                        }
-
-                        default:
-                            LOG_WARN << "Invalid midi status '" << msg->status << "' for a Push & Pull mapping"
-                                     << LOG_END
-                            break;
+                        break;
                     }
 
-                    // for dataref changes, we will only process the event with key pressed (velocity == 127)
-                } else if (mapping->type() == map_type::dataref) {
-                    if (msg->velocity == 127)
-                        add_event = true;
-                } else if (mapping->type() == map_type::command) {
+                    default:
+                        LOG_WARN << "Invalid midi status '" << msg->status
+                                 << "' for a Push & Pull mapping" << LOG_END break;
+                    }
+                    break;
+
+                    // for dataref changes, we will only process the event with key pressed
+                    // (velocity == 127)
+                case map_type::dataref:
+                    if (msg->velocity != 127)
+                        add_event = false;
+                    break;
+
+                case map_type::command:
                     // lock the current control change for outgoing messages
                     if (msg->velocity == 127)
                         m_cc_locked.insert(msg->data);
                     else if (msg->velocity == 0)
                         m_cc_locked.erase(msg->data);
+                    break;
 
-                    add_event = true;
-                } else
-                    add_event = true;
-
-                // push to event handler
-                if (add_event) {
-                    std::shared_ptr<task> event = std::make_shared<task>();
-                    event->msg = msg;
-                    event->map = mapping;
-
-                    m_device_list->add_event(event);
+                default:
+                    break;
                 }
-            }
-        } catch (std::out_of_range const &) {
-            LOG_WARN << "No mapping found for CC '" << msg->data << "' midi message from device '" << m_name << "'"
-                     << LOG_END
+        // push to event handler
+        if (add_event) {
+          std::shared_ptr<task> event = std::make_shared<task>();
+          event->msg = msg;
+          event->map = mapping;
+          LOG_DEBUG << "push\n" << LOG_END;
+          m_device_list->add_event(event);
         }
+      }
+    } catch (std::out_of_range const &) {
+      LOG_WARN << "No mapping found for CC '" << msg->data
+               << "' midi message from device '" << m_name << "'" << LOG_END
     }
+  }
 }
-
 
 /**
  * Process all outbound midi mappings
@@ -285,7 +297,7 @@ void device::process_inbound_message(double deltatime, std::vector<unsigned char
 void device::process_outbound_mappings()
 {
     for (auto &mapping: m_map_out) {
-        if (m_cc_locked.contains(mapping.second->cc()))
+        if (m_cc_locked.contains(mapping.second->arg()))
             continue;
 
         std::shared_ptr<midi_message> msg = mapping.second->execute();

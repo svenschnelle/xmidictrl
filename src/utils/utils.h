@@ -45,7 +45,7 @@ public:
     static log_level log_level_from_code(std::string_view code);
 
     static std::string time_to_string(time_point time);
-    static std::string ch_cc(int ch, int cc);
+    static std::string ch_cmd_arg(int ch, int cmd, int cc);
 
     static bool create_preference_folders(const std::shared_ptr<xplane>& xp);
 };

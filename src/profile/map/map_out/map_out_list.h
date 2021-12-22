@@ -36,7 +36,7 @@ public:
     ~map_out_list();
 
     void add(const std::shared_ptr<map_out>& map);
-    map_out_pair get(int ch, int cc);
+    map_out_pair get(int ch, int cmd, int arg);
 
     map_out_itr begin();
     map_out_itr end();

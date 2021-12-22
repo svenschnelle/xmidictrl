@@ -58,11 +58,20 @@ int map::ch() const
 
 
 /**
- * Return the control change number
+ * Return the argument
  */
-int map::cc() const
+int map::arg() const
 {
-    return m_cc;
+    return m_arg;
+}
+
+
+/**
+ * Return the cmd
+ */
+int map::cmd() const
+{
+    return m_cmd;
 }
 
 
@@ -72,7 +81,7 @@ int map::cc() const
 void map::read_config(toml::value &data)
 {
     read_ch(data);
-    read_cc(data);
+    read_arg(data);
 }
 
 
@@ -81,10 +90,14 @@ void map::read_config(toml::value &data)
  */
 bool map::check()
 {
-    if (m_ch >= 1 && m_cc >= 0)
+    switch(m_cmd) {
+    case 0x8: // note on
+    case 0x9: // note off
+    case 0xb: // control change
         return true;
-    else
+    default:
         return false;
+    }
 }
 
 
@@ -125,28 +138,38 @@ void map::read_ch(toml::value &data)
 /**
  * Read parameter cc
  */
-void map::read_cc(toml::value &data)
+void map::read_arg(toml::value &data)
 {
-    m_cc = -1;
+    m_arg = -1;
+    m_cmd = -1;
 
     try {
         // read control change
         if (data.contains(CFG_KEY_CC)) {
-            m_cc = static_cast<int>( data[CFG_KEY_CC].as_integer());
-
-            LOG_DEBUG << " --> Line " << data.location().line() << " :: Parameter '" << CFG_KEY_CC << "' = '" << m_cc
+            m_arg = static_cast<int>( data[CFG_KEY_CC].as_integer());
+            m_cmd = 0xb;
+            LOG_DEBUG << " --> Line " << data.location().line() << " :: Parameter '" << CFG_KEY_CC << "' = '" << m_arg
                       << "'" << LOG_END
         } else if (data.contains(CFG_KEY_CC_DEPRECATED)) {
-            m_cc = static_cast<int>( data[CFG_KEY_CC_DEPRECATED].as_integer());
-
+            m_arg = static_cast<int>( data[CFG_KEY_CC_DEPRECATED].as_integer());
+            m_cmd = 0xb;
             LOG_WARN << " --> Line " << data.location().line() << "  :: Parameter '" << CFG_KEY_CC_DEPRECATED
                      << "' is deprecated, please rename it to '" << CFG_KEY_CC << "'" << LOG_END
 
             LOG_DEBUG << " --> Line " << data.location().line() << " :: Parameter '" << CFG_KEY_CC_DEPRECATED << "' = '"
-                      << m_cc << "'" << LOG_END
+                      << m_arg << "'" << LOG_END
+        } else if (data.contains(CFG_KEY_NOTE_ON)) {
+            m_arg = static_cast<int>( data[CFG_KEY_NOTE_ON].as_integer());
+            m_cmd = 0x9;
+            LOG_DEBUG << " --> Line " << data.location().line() << " :: Parameter '" << CFG_KEY_NOTE_ON << "' = '"
+                      << m_arg << "'" << LOG_END
+        } else if (data.contains(CFG_KEY_NOTE_OFF)) {
+            m_arg = static_cast<int>( data[CFG_KEY_NOTE_ON].as_integer());
+            m_cmd = 0x8;
+            LOG_DEBUG << " --> Line " << data.location().line() << " :: Parameter '" << CFG_KEY_NOTE_OFF << "' = '"
+                      << m_arg << "'" << LOG_END
         } else {
-            LOG_ERROR << " --> Line " << data.location().line() << " :: Parameter '" << CFG_KEY_CC << "' is missing"
-                      << LOG_END
+            LOG_ERROR << " --> Line " << data.location().line() << " :: Parameter cc/note_on/note_off is missing" << LOG_END
         }
     } catch (toml::type_error &error) {
         LOG_ERROR << " --> Line " << data.location().line() << " :: Error reading mapping" << LOG_END

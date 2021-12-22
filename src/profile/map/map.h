@@ -40,20 +40,22 @@ public:
     virtual map_type type();
 
     [[nodiscard]] int ch() const;
-    [[nodiscard]] int cc() const;
+    [[nodiscard]] int arg() const;
+    [[nodiscard]] int cmd() const;
 
     virtual void read_config(toml::value &data);
     virtual bool check();
 
 protected:
     void read_ch(toml::value &data);
-    void read_cc(toml::value &data);
-
+    void read_cmd(toml::value &data);
+    void read_arg(toml::value &data);
     std::shared_ptr<xplane> m_xp;
 
 private:
     int m_ch {-1};
-    int m_cc {-1};
+    int m_arg {-1};
+    int m_cmd { 1};
 };
 
 } // Namespace xmidictrl

@@ -260,9 +260,9 @@ std::string utils::time_to_string(time_point time)
 /**
  * Return MIDI channel and control change as combined string
  */
-std::string utils::ch_cc(const int ch, const int cc)
+std::string utils::ch_cmd_arg(const int ch, const int cmd, const int cc)
 {
-    return std::to_string(ch) + "_" + std::to_string(cc);
+    return std::to_string(ch) + "_" + std::to_string(cmd) + "_" + std::to_string(cc);
 }
 
 

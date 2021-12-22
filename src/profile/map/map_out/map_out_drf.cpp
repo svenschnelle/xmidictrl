@@ -158,7 +158,7 @@ std::shared_ptr<midi_message> map_out_drf::execute()
         std::shared_ptr<midi_message> msg = std::make_shared<midi_message>();
 
         msg->status = OFFSET_MIDI_CHANNEL_STATUS + ch();
-        msg->data = cc();
+        msg->data = arg();
 
         if (!m_value_on.empty()) {
             if (value_now == m_value_on)
