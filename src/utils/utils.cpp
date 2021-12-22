@@ -100,6 +100,39 @@ int utils::read_int_parameter(toml::value &settings, std::string_view parameter,
     return value;
 }
 
+/**
+ * Read a std::vector<unsigned char> array for a config array
+ */
+std::vector<unsigned char> utils::read_uchar_array_parameter(toml::value &settings, std::string_view parameter, bool mandatory)
+{
+    std::vector<unsigned char> value;
+
+    if (parameter.empty()) {
+        LOG_ERROR << "Internal error (map::read_uchar_parameter --> parameter is empty" << LOG_END
+        return value;
+    }
+
+    try {
+        // read dataref
+        if (settings.contains(parameter.data())) {
+          value = toml::find<std::vector<unsigned char>>(settings, parameter.data());
+            //            LOG_DEBUG << " --> Line " << settings.location().line() << " :: Parameter '" << parameter << "' = '"
+            //        << value << "'" << LOG_END
+        } else {
+            if (mandatory) {
+                LOG_ERROR << "Line " << settings.location().line() << " :: " << settings.location().line_str()
+                          << LOG_END
+                LOG_ERROR << " --> Parameter '" << parameter << "' not found" << LOG_END
+            }
+        }
+    } catch (toml::type_error &error) {
+        LOG_ERROR << "Line " << settings.location().line() << " :: " << settings.location().line_str() << LOG_END
+        LOG_ERROR << " --> Error reading mapping" << LOG_END
+        LOG_ERROR << error.what() << LOG_END
+    }
+
+    return value;
+}
 
 /**
  * Return the text of a text message type

@@ -36,7 +36,7 @@ public:
 
     typedef std::shared_ptr<device_list> ptr;
 
-    std::shared_ptr<device> create_device(std::string_view name, unsigned int port_in, unsigned int port_out);
+    std::shared_ptr<device> create_device(std::string_view name, unsigned int port_in, unsigned int port_out, std::vector<unsigned char> &init);
 
     bool open_connections();
     void close_connections();
@@ -45,6 +45,7 @@ public:
 
     void process_inbound_events();
     void process_outbound_mappings();
+    void process_init();
 
     void clear();
     unsigned int size();

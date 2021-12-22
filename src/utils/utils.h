@@ -20,6 +20,7 @@
 
 // Standard
 #include <string>
+#include <vector>
 
 // toml11
 #include <toml.hpp>
@@ -34,6 +35,7 @@ class utils {
 public:
     static std::string read_string_parameter(toml::value &settings, std::string_view parameter, bool mandatory = true);
     static int read_int_parameter(toml::value &settings, std::string_view parameter, bool mandatory = true);
+    static std::vector<unsigned char> read_uchar_array_parameter(toml::value &settings, std::string_view parameter, bool mandatory = true);
 
     static std::string text_msg_type_as_text(text_msg_type type);
     static std::string midi_msg_type_as_text(midi_type type);

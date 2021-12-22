@@ -37,8 +37,9 @@ namespace xmidictrl {
 device::device(std::string_view name,
                unsigned int port_in,
                unsigned int port_out,
+               std::vector<unsigned char> &init,
                std::shared_ptr<device_list> device_list)
-    : m_device_list(std::move(device_list)), m_name(name), m_port_in(port_in), m_port_out(port_out)
+    : m_device_list(std::move(device_list)), m_name(name), m_port_in(port_in), m_port_out(port_out), m_init(init)
 {
     try {
         // create midi classes
@@ -320,6 +321,13 @@ void device::process_outbound_mappings()
 
 
 
+/**
+ * Process all init messages
+ */
+void device::process_init()
+{
+    m_midi_out->sendMessage(&m_init);
+}
 
 //---------------------------------------------------------------------------------------------------------------------
 //   PRIVATE

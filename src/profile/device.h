@@ -25,6 +25,7 @@
 #include <set>
 #include <string>
 #include <string_view>
+#include <vector>
 
 // RtMidi
 #include "RtMidi.h"
@@ -42,7 +43,8 @@ class device_list;
 
 class device {
 public:
-    device(std::string_view name, unsigned int port_in, unsigned int port_out, std::shared_ptr<device_list> device_list);
+    device(std::string_view name, unsigned int port_in, unsigned int port_out,
+           std::vector<unsigned char> &init, std::shared_ptr<device_list> device_list);
     ~device();
 
     // no copying or copy assignments are allowed
@@ -59,6 +61,7 @@ public:
     void process_inbound_message(double deltatime, std::vector<unsigned char> *message);
 
     void process_outbound_mappings();
+    void process_init();
 
 private:
     void save_event_datetime(unsigned int cc);
@@ -78,6 +81,7 @@ private:
 
     std::map<int, time_point> m_event_storage;
     std::set<int> m_cc_locked;
+    std::vector<unsigned char> m_init {};
 };
 
 } // Namespace xmidictrl

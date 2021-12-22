@@ -47,9 +47,9 @@ device_list::~device_list()
 /**
  * Create a new midi device
  */
-std::shared_ptr<device> device_list::create_device(std::string_view name, unsigned int port_in, unsigned int port_out)
+std::shared_ptr<device> device_list::create_device(std::string_view name, unsigned int port_in, unsigned int port_out, std::vector<unsigned char> &init)
 {
-    std::shared_ptr<device> dev = std::make_shared<device>(name, port_in, port_out, shared_from_this());
+    std::shared_ptr<device> dev = std::make_shared<device>(name, port_in, port_out, init, shared_from_this());
     m_device_list.push_back(dev);
 
     return dev;
@@ -130,6 +130,17 @@ void device_list::process_outbound_mappings()
     for (auto const &device: m_device_list) {
         if (device != nullptr)
             device->process_outbound_mappings();
+    }
+}
+
+/**
+ * Process the midi init message
+ */
+void device_list::process_init()
+{
+    for (auto const &device: m_device_list) {
+        if (device != nullptr)
+            device->process_init();
     }
 }
 

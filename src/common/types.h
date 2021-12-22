@@ -73,6 +73,7 @@ const char *const CFG_KEY_COMMAND_PUSH = "command_push";
 const char *const CFG_KEY_COMMAND_UP = "command_up";
 const char *const CFG_KEY_DATAREF = "dataref";
 const char *const CFG_KEY_INDEX = "index";
+const char *const CFG_KEY_INIT = "init";
 const char *const CFG_KEY_SCALE = "scale";
 const char *const CFG_KEY_OFFSET= "offset";
 const char *const CFG_KEY_DEVICE = "device";

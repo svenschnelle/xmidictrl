@@ -171,6 +171,8 @@ void profile::process()
 
     // process midi outbound mappings
     m_device_list->process_outbound_mappings();
+
+    m_device_list->process_init();
 }
 
 
@@ -274,8 +276,10 @@ void profile::create_device_list()
                     continue;
                 }
 
+                std::vector<unsigned char> init = utils::read_uchar_array_parameter(settings_dev, CFG_KEY_INIT);
+
                 // create device
-                std::shared_ptr<device> device = m_device_list->create_device(name, port_in, port_out);
+                std::shared_ptr<device> device = m_device_list->create_device(name, port_in, port_out, init);
 
                 if (device != nullptr) {
                     // create inbound mappings
