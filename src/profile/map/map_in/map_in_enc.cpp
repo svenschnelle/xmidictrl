@@ -127,6 +127,23 @@ std::string_view map_in_enc::command_fast_down() const
         return m_command_fast_down;
 }
 
+/**
+ * Set the command for mode
+ */
+void map_in_enc::set_command_mode(std::string_view command_mode)
+{
+    m_command_mode = command_mode;
+}
+
+
+/**
+ * Return command for mode
+ */
+std::string_view map_in_enc::command_mode() const
+{
+    return m_command_mode;
+}
+
 
 /**
  * Read settings from config
@@ -147,6 +164,10 @@ void map_in_enc::read_config(toml::value &settings)
 
     // read fast command down
     set_command_fast_down(utils::read_string_parameter(settings, CFG_KEY_COMMAND_FAST_DOWN, false));
+
+    // read differential mode
+    set_command_mode(utils::read_string_parameter(settings, CFG_KEY_MODE, false));
+
 }
 
 
@@ -170,6 +191,30 @@ bool map_in_enc::check()
  */
 void map_in_enc::execute(midi_message &msg)
 {
+    if (!m_command_mode.empty() && m_command_mode == "akai") {
+        switch (msg.velocity) {
+        case 0:
+            LOG_DEBUG << " --> Execute command '" << command_down() << "'"
+                      << LOG_END m_xp->cmd().execute(command_down());
+            break;
+        case 0x7f:
+            LOG_DEBUG << " --> Execute command '" << command_up() << "'"
+                      << LOG_END m_xp->cmd().execute(command_up());
+            break;
+        default:
+            if (msg.velocity - m_old_velocity > 0) {
+                LOG_DEBUG << " --> Execute command '" << command_up() << "'"
+                          << LOG_END m_xp->cmd().execute(command_up());
+            } else {
+                LOG_DEBUG << " --> Execute command '" << command_down() << "'"
+                          << LOG_END m_xp->cmd().execute(command_down());
+            }
+            break;
+        }
+        m_old_velocity = msg.velocity;
+        return;
+    }
+
     if (msg.velocity < 64) {
         // Down
         if (msg.velocity < 61) {

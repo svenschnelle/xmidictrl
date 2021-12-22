@@ -50,6 +50,9 @@ public:
     void set_command_fast_down(std::string_view command_fast_down);
     [[nodiscard]] std::string_view command_fast_down() const;
 
+    void set_command_mode(std::string_view command_mode);
+    [[nodiscard]] std::string_view command_mode() const;
+
     void read_config(toml::value &settings) override;
     bool check() override;
 
@@ -61,6 +64,9 @@ private:
 
     std::string m_command_fast_up {};
     std::string m_command_fast_down {};
+
+    std::string m_command_mode {};
+    int m_old_velocity;
 };
 
 } // Namespace xmidictrl

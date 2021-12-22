@@ -82,6 +82,7 @@ const char *const CFG_KEY_LOG_MIDI = "get_log_midi";
 const char *const CFG_KEY_MAPPING = "mapping";
 const char *const CFG_KEY_MAPPING_IN = "mapping_in";
 const char *const CFG_KEY_MAPPING_OUT = "mapping_out";
+const char *const CFG_KEY_MODE = "mode";
 const char *const CFG_KEY_NAME = "name";
 const char *const CFG_KEY_PORT_IN = "port_in";
 const char *const CFG_KEY_PORT_OUT = "port_out";
