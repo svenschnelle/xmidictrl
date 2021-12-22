@@ -88,6 +88,7 @@ const char *const CFG_KEY_NOTE_ON = "note_on";
 const char *const CFG_KEY_NOTE_OFF = "note_off";
 const char *const CFG_KEY_PORT_IN = "port_in";
 const char *const CFG_KEY_PORT_OUT = "port_out";
+const char *const CFG_KEY_SEND_DATA = "send_data";
 const char *const CFG_KEY_SHOW_MSG_DIALOG = "show_message_dialog";
 const char *const CFG_KEY_TITLE = "title";
 const char *const CFG_KEY_TYPE = "type";

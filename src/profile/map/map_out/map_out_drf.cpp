@@ -106,6 +106,27 @@ std::string_view map_out_drf::value_off() const
 
 
 /**
+ * Set send on
+ */
+void map_out_drf::set_send_data(std::string_view arg)
+{
+    if (!arg.empty())
+        m_send_data = std::stoi(arg.data());
+    else
+        m_send_data = 127;
+}
+
+
+/**
+ * Return send on
+ */
+int map_out_drf::send_data() const
+{
+    return m_send_data;
+}
+
+
+/**
  * Read settings from config
  */
 void map_out_drf::read_config(toml::value &settings)
@@ -121,6 +142,9 @@ void map_out_drf::read_config(toml::value &settings)
 
     // read value off
     set_value_off(utils::read_string_parameter(settings, CFG_KEY_VALUE_OFF, false));
+
+    // read send data
+    set_send_data(utils::read_string_parameter(settings, CFG_KEY_SEND_DATA, false));
 }
 
 
@@ -157,19 +181,19 @@ std::shared_ptr<midi_message> map_out_drf::execute()
 
         std::shared_ptr<midi_message> msg = std::make_shared<midi_message>();
 
-        msg->status = OFFSET_MIDI_CHANNEL_STATUS + ch();
+        msg->status = (cmd() << 4) | ch();
         msg->data = arg();
 
         if (!m_value_on.empty()) {
             if (value_now == m_value_on)
-                msg->velocity = 127;
+                msg->velocity = send_data();
             else if (value_now == m_value_off || m_value_off.empty())
                 msg->velocity = 0;
         } else {
             if (value_now == m_value_off)
                 msg->velocity = 0;
             else if (value_now == m_value_on || m_value_on.empty())
-                msg->velocity = 127;
+                msg->velocity = send_data();
         }
 
         return msg;

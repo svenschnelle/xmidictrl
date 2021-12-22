@@ -47,6 +47,9 @@ public:
     void set_value_off(std::string_view value_off);
     [[nodiscard]] std::string_view value_off() const;
 
+    void set_send_data(std::string_view arg);
+    [[nodiscard]] int send_data() const;
+
     void read_config(toml::value &settings) override;
     bool check() override;
 
@@ -56,8 +59,8 @@ private:
     std::string m_dataref;
     std::string m_value_on;
     std::string m_value_off;
-
     std::string m_value_previous;
+    int m_send_data { 127 };
 };
 
 } // Namespace xmidictrl
